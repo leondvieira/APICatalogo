@@ -1,6 +1,7 @@
 ﻿using APICatalogo.DTOs;
 using APICatalogo.DTOs.Mappings;
 using APICatalogo.Filters;
+using APICatalogo.Models;
 using APICatalogo.Pagination;
 using APICatalogo.Repositories;
 using Microsoft.AspNetCore.Mvc;
@@ -19,24 +20,8 @@ namespace APICatalogo.Controllers
             _uof = uof;
         }
 
-        [HttpGet("categorias")]
-        [ServiceFilter(typeof(ApiLoggingFilter))]
-        public ActionResult<IEnumerable<CategoriaDTO>> Get()
+        private IEnumerable<CategoriaDTO> ObterCategorias(PagedList<Categoria> categorias)
         {
-            var categorias = _uof.CategoriaRepository.GetAll();
-            if (categorias == null)
-                return NotFound("Não existem categorias...");
-
-            var categoriasDto = categorias.ToCategoriaDTOList();
-
-            return Ok(categoriasDto);
-        }
-
-        [HttpGet]
-        public ActionResult<IEnumerable<CategoriaDTO>> Get([FromQuery] CategoriasParameters categoriasParameters)
-        {
-            var categorias = _uof.CategoriaRepository.GetCategorias(categoriasParameters);
-
             var metadata = new
             {
                 categorias.TotalCount,
@@ -50,9 +35,42 @@ namespace APICatalogo.Controllers
             Response.Headers.Append("X-Pagination", JsonConvert.SerializeObject(metadata));
 
             var categoriasDto = categorias.ToCategoriaDTOList();
+            return categoriasDto;
+        }
+
+        [HttpGet("categorias")]
+        [ServiceFilter(typeof(ApiLoggingFilter))]
+        public ActionResult<IEnumerable<CategoriaDTO>> Get()
+        {
+            var categorias = _uof.CategoriaRepository.GetAll();
+            if (categorias == null)
+                return NotFound("Não existem categorias...");
+
+            var categoriasDto = categorias.ToCategoriaDTOList();
+
+            return Ok(categoriasDto);
+        }
+
+        [HttpGet("categorias/pagination")]
+        public ActionResult<IEnumerable<CategoriaDTO>> Get([FromQuery] CategoriasParameters categoriasParameters)
+        {
+            var categorias = _uof.CategoriaRepository.GetCategorias(categoriasParameters);
+
+            IEnumerable<CategoriaDTO> categoriasDto = ObterCategorias(categorias);
             return Ok(categoriasDto);
 
         }
+
+        [HttpGet("categorias/filter/pagination")]
+        public ActionResult<IEnumerable<CategoriaDTO>> GetCategoriasFiltradas([FromQuery] CategoriasFiltroNome categoriasParameters)
+        {
+            var categorias = _uof.CategoriaRepository.GetCategoriasFiltroNome(categoriasParameters);
+            IEnumerable<CategoriaDTO> categoriasDto = ObterCategorias(categorias);
+            return Ok(categoriasDto);
+
+        }
+
+
 
         [HttpGet("{id:int}", Name = "ObterCategoria")]
         public ActionResult<CategoriaDTO> Get(int id)

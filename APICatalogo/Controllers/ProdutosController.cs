@@ -22,22 +22,8 @@ namespace APICatalogo.Controllers
             _mapper = mapper;
         }
 
-        [HttpGet("produtos/{categoriaId:int}")]
-        public ActionResult<IEnumerable<ProdutoDTO>> GetProdutosCategoria(int categoriaId)
+        private ActionResult<IEnumerable<ProdutoDTO>> ObterProdutos(PagedList<Produto> produtos)
         {
-            var produtos = _uof.ProdutoRepository.GetProdutosPorCategoria(categoriaId);
-            if (produtos is null)
-                return NotFound();
-
-            var produtosDto = _mapper.Map<IEnumerable<ProdutoDTO>>(produtos);
-
-            return Ok(produtosDto);
-        }
-
-        [HttpGet("pagination")]
-        public ActionResult<IEnumerable<ProdutoDTO>> Get([FromQuery] ProdutosParameters produtosParameters)
-        {
-            var produtos = _uof.ProdutoRepository.GetProdutos(produtosParameters);
             var metadata = new
             {
                 produtos.TotalCount,
@@ -54,6 +40,31 @@ namespace APICatalogo.Controllers
             return Ok(produtosDto);
         }
 
+        [HttpGet("produtos/{categoriaId:int}")]
+        public ActionResult<IEnumerable<ProdutoDTO>> GetProdutosCategoria(int categoriaId)
+        {
+            var produtos = _uof.ProdutoRepository.GetProdutosPorCategoria(categoriaId);
+            if (produtos is null)
+                return NotFound();
+
+            var produtosDto = _mapper.Map<IEnumerable<ProdutoDTO>>(produtos);
+
+            return Ok(produtosDto);
+        }
+
+        [HttpGet("pagination")]
+        public ActionResult<IEnumerable<ProdutoDTO>> Get([FromQuery] ProdutosParameters produtosParameters)
+        {
+            var produtos = _uof.ProdutoRepository.GetProdutos(produtosParameters);
+            return ObterProdutos(produtos);
+        }
+
+        [HttpGet("filter/preco/pagination")]
+        public ActionResult<IEnumerable<ProdutoDTO>> GetProdutosFilterPreco([FromQuery] ProdutosFiltroPreco produtosFilterParameters)
+        {
+            var produtos = _uof.ProdutoRepository.GetProdutosFiltroPreco(produtosFilterParameters);
+            return ObterProdutos(produtos);
+        }
 
         [HttpGet]
         public ActionResult<IEnumerable<ProdutoDTO>> Get()
