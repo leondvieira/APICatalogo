@@ -3,6 +3,7 @@ using APICatalogo.Models;
 using APICatalogo.Pagination;
 using APICatalogo.Repositories;
 using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
@@ -23,6 +24,7 @@ namespace APICatalogo.Controllers
             _mapper = mapper;
         }
 
+        [Authorize(Policy = "UserOnly")]
         private ActionResult<IEnumerable<ProdutoDTO>> ObterProdutos(IPagedList<Produto> produtos)
         {
             var metadata = new
